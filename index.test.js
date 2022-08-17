@@ -12,7 +12,7 @@ describe('Test if Board, Cheese and User models can be created', () => {
         const firstBoard = await Board.create({
             type: 'French',
             description: 'the greatest cheese board',
-            rating: '5.0'
+            rating: 5.0
         });
         expect(firstBoard['dataValues'].type).toBe('French');
     });
@@ -39,6 +39,7 @@ describe('Test if Board, Cheese and User models can be created', () => {
 describe('User and Board model associations', () => {
     beforeAll(async () => {
         await Board.sync({ force: true });
+        await Cheese.sync({ force: true });
         await User.sync({ force: true });
     });
 
@@ -64,9 +65,54 @@ describe('User and Board model associations', () => {
         await anne.addBoard(spanish);
         await anne.addBoard(italian);
         const annesBoards = await anne.getBoards();
-        console.log(annesBoards[0].dataValues.type)
 
         expect(annesBoards[0].dataValues.type).toBe('Spanish')
         expect(annesBoards[1].dataValues.type).toBe('Italian')
     });
+});
+
+describe('Board and Cheese model associations', () => {
+    beforeAll(async () => {
+        await Board.sync({ force: true });
+        await Cheese.sync({ force: true });
+        await User.sync({ force: true });
+    });
+
+    test('Board can have multiple Cheese', async () => {
+        await Board.sync();
+        const british = await Board.create({
+            type: 'British',
+            description: 'Best of British cheese',
+            rating: 3.9
+        });
+
+        await Board.sync();
+        const international = await Board.create({
+            type: 'International',
+            description: 'Cheese from across the globe',
+            rating: 4.9
+        });
+
+        await Cheese.sync();
+        const cheddar = await Cheese.create({
+            title: 'Cheddar',
+            description: 'Mature British cheddar'
+        });
+        const stilton = await Cheese.create({
+            title: 'Stilton',
+            description: 'Quality British stilton'
+        });
+
+        await british.addCheese(cheddar);
+        await british.addCheese(stilton);
+
+        await anne.addBoard(spanish);
+        await anne.addBoard(italian);
+        const britishCheeses = await british.getCheeses();
+
+        expect(britishCheeses[0].dataValues.title).toBe('Cheddar')
+        expect(britishCheeses[1].dataValues.title).toBe('Silton')
+    });
+
+
 });
